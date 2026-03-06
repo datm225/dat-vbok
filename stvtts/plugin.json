@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "name": "texttospeechSTV",
+    "author": "vBook",
+    "version": 1,
+    "source": "https://sangtacviet.com",
+    "description": "Khởi động được chức năng đọc test-vbok1",
+    "type": "tts"
+  },
+  "script": {
+    "voice": "voice.js",
+    "tts": "tts.js"
+  },
+  "config": {
+    "preload_size": 3,
+    "max_length": 200,
+    "support_url": "https://sangtacviet.com"
+  }
+}
