@@ -7,8 +7,8 @@
     "author": "vBook",
       "version": 1,
       "source": "https://teststvtts.com",
-      "path": "https://raw.githubusercontent.com/datm225/dat-vbok/master/stv/plugin.zip",
-      "icon": "https://raw.githubusercontent.com/datm225/dat-vbok/master/stv/icon.png",
+      "path": "https://raw.githubusercontent.com/datm225/dat-vbok/master/stvtts/plugin.zip",
+      "icon": "https://raw.githubusercontent.com/datm225/dat-vbok/master/stvtts/icon.png",
       "description": "Nghe truyện bằng TTS tiktok stv1",
       "type": "tts1"
   }]
