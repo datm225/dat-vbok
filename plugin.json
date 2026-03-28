@@ -4,7 +4,7 @@
     "description": ""
   },
   "data": [{
-    "author": "vBook",
+    "author": "datm",
       "version": 1.1,
       "source": "https://teststvtts.com",
       "path": "https://raw.githubusercontent.com/datm225/dat-vbok/master/stvtts/plugin.zip",
