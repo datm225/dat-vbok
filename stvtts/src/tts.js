@@ -1,51 +1,86 @@
 load("voice_list.js");
 
 function execute(text, voice) {
-    // Danh sách các tên miền thay thế của Sangtacviet
-    var domains = [
-        "https://sangtacviet.com",
+    const MAX_LENGTH = 300; // Giới hạn ký tự mỗi lần gọi API
+    const domains = [
         "https://sangtacviet.pro",
         "https://sangtacviet.vip",
-        "https://sangtacviet.app"
+        "https://sangtacviet.com"
     ];
 
-    var lastError = "";
+    // --- 1. Hàm bổ trợ chia nhỏ văn bản ---
+    function splitIntoChunks(str, len) {
+        const chunks = [];
+        let i = 0;
+        while (i < str.length) {
+            let segment = str.substring(i, i + len);
+            // Tìm điểm ngắt quãng tự nhiên (dấu câu hoặc xuống dòng)
+            let lastBreak = Math.max(
+                segment.lastIndexOf('.'), 
+                segment.lastIndexOf('!'), 
+                segment.lastIndexOf('?'),
+                segment.lastIndexOf('\n')
+            );
+            
+            // Nếu không có dấu câu, tìm khoảng trắng
+            if (lastBreak === -1) lastBreak = segment.lastIndexOf(' ');
+            
+            // Nếu vẫn không có (từ quá dài), cắt cứng tại len
+            let actualLen = (lastBreak !== -1 && i + len < str.length) ? lastBreak + 1 : len;
+            chunks.push(str.substring(i, i + actualLen).trim());
+            i += actualLen;
+        }
+        return chunks.filter(c => c.length > 0);
+    }
 
-    // Thử lần lượt từng tên miền trong danh sách
-    for (var i = 0; i < domains.length; i++) {
-        var baseDomain = domains[i];
-        var url = baseDomain + "/io/s1213/tiktoktts?text=";
+    // --- 2. Thực thi lấy dữ liệu ---
+    const textParts = splitIntoChunks(text, MAX_LENGTH);
+    let combinedAudio = [];
 
-        try {
-            var response = fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Referer': baseDomain + '/',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                },
-                body: JSON.stringify({
-                    "text": text,
-                    "voice": voice
-                })
-            });
+    for (let part of textParts) {
+        let partSuccess = false;
+        
+        for (let domain of domains) {
+            try {
+                let response = fetch(domain + "/io/s1213/tiktoktts", {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Referer': domain + '/'
+                    },
+                    body: JSON.stringify({ "text": part, "voice": voice })
+                });
 
-            if (response.ok) {
-                // Chuyển đổi dữ liệu Binary từ server thành Base64 cho vBook
-                var result = response.base64(); 
-                
-                // Kiểm tra nếu dữ liệu trả về đủ lớn (tránh trường hợp file lỗi/trống)
-                if (result && result.length > 500) {
-                    return Response.success(result);
+                if (response.ok) {
+                    let b64 = response.base64();
+                    if (b64 && b64.length > 500) {
+                        combinedAudio.push(b64);
+                        partSuccess = true;
+                        break; // Chuyển sang đoạn text tiếp theo
+                    }
                 }
+            } catch (e) {
+                continue; // Thử domain tiếp theo nếu domain này lỗi
             }
-        } catch (e) {
-            lastError = e.message;
-            // Nếu lỗi, vòng lặp sẽ tiếp tục thử tên miền tiếp theo
-            continue; 
+        }
+        
+        // Nếu một đoạn bị lỗi hoàn toàn sau khi thử tất cả domain, 
+        // ta có thể chọn dừng lại hoặc bỏ qua đoạn đó.
+        if (!partSuccess) {
+            console.log("Không thể lấy audio cho đoạn: " + part.substring(0, 20));
         }
     }
 
-    // Nếu đã thử hết các tên miền mà vẫn thất bại
-    return Response.error("Lỗi: Không thể lấy dữ liệu âm thanh từ bất kỳ server nào. " + lastError);
+    // --- 3. Trả về kết quả ---
+    if (combinedAudio.length > 0) {
+        /**
+         * LƯU Ý CHO vBOOK:
+         * Nếu vBook yêu cầu 1 file duy nhất, bạn có thể thử nối chuỗi: combinedAudio.join("")
+         * Nếu vBook hỗ trợ danh sách, trả về mảng.
+         * Dưới đây là cách trả về phổ biến nhất (nối chuỗi base64)
+         */
+        return Response.success(combinedAudio.join("")); 
+    }
+
+    return Response.error("Không lấy được dữ liệu âm thanh từ bất kỳ server nào.");
 }
