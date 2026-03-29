@@ -1,7 +1,7 @@
 load("voice_list.js");
 
 function execute(text, voice) {
-    const MAX_LENGTH = 300; // Giới hạn ký tự mỗi lần gọi API
+    const MAX_LENGTH = 250; // Giới hạn ký tự mỗi lần gọi API
     const domains = [
         "https://sangtacviet.pro",
         "https://sangtacviet.vip",

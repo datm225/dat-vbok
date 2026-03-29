@@ -2,7 +2,7 @@
   "metadata": {
     "name": "texttospeechSTV",
     "author": "datm",
-    "version": 2,
+    "version": 2.1,
     "source": "https://sangtacviet.com",
     "description": "Khởi động được chức năng đọc test-vbok1",
     "type": "tts"
@@ -13,7 +13,7 @@
   },
   "config": {
     "preload_size": 3,
-    "max_length": 200,
+    "max_length": 250,
     "support_url": "https://sangtacviet.com"
   }
 }
